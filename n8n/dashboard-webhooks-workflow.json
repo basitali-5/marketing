@@ -1,0 +1,301 @@
+{
+  "name": "Dashboard Media Backend Webhooks",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Import this workflow, activate it, then set Django to use the four webhook paths below. The Code nodes return demo-ready media so the dashboard can run immediately. Replace the Code nodes with your real AI generation, storage, and social publishing nodes when credentials are connected.",
+        "height": 220,
+        "width": 360
+      },
+      "id": "8f6f1d14-6f36-48ca-99b7-7ca32f9f6751",
+      "name": "Setup Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-options",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e01d5227-10e9-4dc8-85b0-2f0bb9ebdb6a",
+      "name": "Reference Options Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        -320
+      ],
+      "webhookId": "generate-options"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst reference = body.reference_text || body.referenceText || body.prompt || 'Brand campaign';\nconst count = Math.max(1, Number(body.output_count || body.outputCount || 2));\nconst options = Array.from({ length: count }, (_, index) => ({\n  title: `Option ${index + 1}`,\n  description: `${reference} - creative direction ${index + 1}`,\n  prompt: `${reference}. Produce a polished social media concept with clear subject, lighting, composition, and campaign CTA. Variant ${index + 1}.`,\n  variant: String(index + 1).padStart(2, '0')\n}));\nreturn [{ json: { job_id: body.job_id || null, options } }];"
+      },
+      "id": "da270468-08fe-4547-b523-5d3fb808f577",
+      "name": "Build Reference Options",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "d889df94-0e79-4f80-86e4-8e5a4bdd5eb5",
+      "name": "Return Options",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-image",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ad28ebaf-5bd6-4926-823b-70af68294518",
+      "name": "Image Generation Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        0
+      ],
+      "webhookId": "generate-image"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst prompt = body.prompt || body.description || body.post_text || 'AI generated campaign image';\nconst count = Math.max(1, Number(body.output_count || body.outputCount || 2));\nconst ratio = body.aspect_ratio || body.aspectRatio || '1:1';\nconst sizeByRatio = {\n  '16:9': '1280/720',\n  '9:16': '720/1280',\n  '1:1': '1200/1200'\n};\nconst size = sizeByRatio[ratio] || sizeByRatio['1:1'];\nconst seedText = `${body.job_id || ''}:${prompt}`;\nlet hash = 0;\nfor (let index = 0; index < seedText.length; index += 1) {\n  hash = ((hash << 5) - hash + seedText.charCodeAt(index)) >>> 0;\n}\nconst image_urls = Array.from({ length: count }, (_, index) => `https://picsum.photos/seed/${hash}-${index + 1}/${size}`);\nreturn [{\n  json: {\n    job_id: body.job_id || null,\n    status: 'ready',\n    provider: 'demo-image-generator',\n    prompt,\n    aspect_ratio: ratio,\n    image_urls,\n    urls: image_urls,\n    generated_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "a4c624f5-c54e-4b0c-81c1-6a181ae7b173",
+      "name": "Generate Image Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "84bdd528-4d97-4c46-9fa7-5f30a6a81a39",
+      "name": "Return Image URLs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "product",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b090b6e1-490a-47eb-ab2a-7aa5487d5453",
+      "name": "Video Generation Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        300
+      ],
+      "webhookId": "product"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst prompt = body.prompt || body.description || body.topic || 'AI generated campaign video';\nconst count = Math.max(1, Number(body.output_count || body.outputCount || 2));\nconst demoVideos = [\n  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',\n  'https://media.w3.org/2010/05/sintel/trailer.mp4'\n];\nconst video_urls = Array.from({ length: count }, (_, index) => demoVideos[index % demoVideos.length]);\nreturn [{\n  json: {\n    job_id: body.job_id || null,\n    status: 'ready',\n    provider: 'demo-video-generator',\n    prompt,\n    reference_text: body.reference_text || body.referenceText || '',\n    aspect_ratio: body.aspect_ratio || body.aspectRatio || '16:9',\n    video_urls,\n    urls: video_urls,\n    generated_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "ffd32072-b692-4e75-8bd4-2ce37ee54d48",
+      "name": "Generate Video Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "48cb4206-53b6-4b3f-b3eb-76bc456aa76e",
+      "name": "Return Video URLs",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        180,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "publish",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "aa4cb83a-eb31-47b0-9a68-257508d24285",
+      "name": "Publish Schedule Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        620
+      ],
+      "webhookId": "publish"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst parseJson = (value, fallback) => {\n  if (Array.isArray(value) || (value && typeof value === 'object')) return value;\n  if (typeof value !== 'string' || value.trim() === '') return fallback;\n  try { return JSON.parse(value); } catch { return fallback; }\n};\nconst platforms = parseJson(body.platforms, body.platforms ? [body.platforms] : []);\nconst schedulePlan = parseJson(body.schedule_plan || body.schedule_details, []);\nconst scheduleAt = body.scheduled_at || body.schedule_at || schedulePlan?.[0]?.scheduled_at || null;\nreturn [{\n  json: {\n    job_id: body.job_id || null,\n    status: scheduleAt ? 'scheduled' : 'ready_to_publish',\n    provider: 'demo-publisher',\n    media_url: body.media_url || body.mediaUrl || '',\n    content_type: body.content_type || 'image',\n    platforms,\n    caption: body.caption || '',\n    hashtags: body.hashtags || '',\n    scheduled_at: scheduleAt,\n    schedule_plan: schedulePlan,\n    queued_at: new Date().toISOString(),\n    message: scheduleAt ? `Queued for ${scheduleAt}` : 'No schedule time received; ready for manual publishing.'\n  }\n}];"
+      },
+      "id": "75194555-e121-4908-bd7d-747f78ca8bc6",
+      "name": "Queue Publish Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "3d4cad62-a384-466f-8f84-9985e27e91fb",
+      "name": "Return Schedule Status",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        180,
+        620
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Reference Options Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Reference Options",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reference Options": {
+      "main": [
+        [
+          {
+            "node": "Return Options",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Generation Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate Image Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image Result": {
+      "main": [
+        [
+          {
+            "node": "Return Image URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Generation Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Result": {
+      "main": [
+        [
+          {
+            "node": "Return Video URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Schedule Webhook": {
+      "main": [
+        [
+          {
+            "node": "Queue Publish Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue Publish Result": {
+      "main": [
+        [
+          {
+            "node": "Return Schedule Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a750c1e7-7175-4311-8104-a1fa02e1bf33",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "dashboard-media-backend-webhooks",
+  "tags": []
+}

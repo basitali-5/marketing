@@ -1,0 +1,87 @@
+﻿@import "tailwindcss";
+
+:root {
+  --radius: 0.75rem;
+  --color-background: oklch(0.977 0.004 250);
+  --color-foreground: oklch(0.21 0.035 260);
+  --color-surface: oklch(1 0 0);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.21 0.035 260);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.21 0.035 260);
+  --color-primary: oklch(0.55 0.2 262);
+  --color-primary-foreground: oklch(0.99 0.002 250);
+  --color-secondary: oklch(0.965 0.008 255);
+  --color-secondary-foreground: oklch(0.3 0.035 260);
+  --color-muted: oklch(0.968 0.007 250);
+  --color-muted-foreground: oklch(0.56 0.028 258);
+  --color-accent: oklch(0.955 0.025 258);
+  --color-accent-foreground: oklch(0.42 0.13 262);
+  --color-destructive: oklch(0.6 0.22 25);
+  --color-destructive-foreground: oklch(0.99 0.002 250);
+  --color-border: oklch(0.918 0.012 255);
+  --color-input: oklch(0.918 0.012 255);
+  --color-ring: oklch(0.55 0.2 262);
+  --shadow-card: 0 1px 2px oklch(0.21 0.035 260 / 6%), 0 8px 24px -12px oklch(0.21 0.035 260 / 18%);
+  --shadow-soft: 0 10px 30px -18px oklch(0.55 0.2 262 / 45%);
+  font-family: Inter, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.field {
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
